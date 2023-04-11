@@ -9,11 +9,16 @@ pub fn build(b: *std.build.Builder) void {
 
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
-    const mode = b.standardReleaseOptions();
+    const optimize = b.standardOptimizeOption(.{});
 
-    const exe = b.addExecutable("zig-debug-test", "src/main.zig");
-    exe.setTarget(target);
-    exe.setBuildMode(mode);
+    const exe = b.addExecutable(std.Build.ExecutableOptions{
+        .name = "zig-debug-test",
+        .target = target,
+        .optimize = optimize,
+        .root_source_file = .{
+            .path = "src/main.zig",
+        },
+    });
     exe.install();
 
     const run_cmd = exe.run();
@@ -27,18 +32,33 @@ pub fn build(b: *std.build.Builder) void {
 
     const test_step = b.step("test", "Run unit tests");
 
-    var exe_tests = b.addTest("src/main.zig");
-    exe_tests.setTarget(target);
-    exe_tests.setBuildMode(mode);
+    var exe_tests = b.addTest(std.Build.TestOptions{
+        .name = "main-test",
+        .root_source_file = .{
+            .path = "src/main.zig",
+        },
+        .target = target,
+        .optimize = optimize,
+    });
     test_step.dependOn(&exe_tests.step);
 
-    exe_tests = b.addTest("src/introducing_zig_test.zig");
-    exe_tests.setTarget(target);
-    exe_tests.setBuildMode(mode);
+    exe_tests = b.addTest(std.Build.TestOptions{
+        .name = "introducing_zig",
+        .root_source_file = .{
+            .path = "src/introducing_zig.zig",
+        },
+        .target = target,
+        .optimize = optimize,
+    });
     test_step.dependOn(&exe_tests.step);
 
-    exe_tests = b.addTest("src/new_test.zig");
-    exe_tests.setTarget(target);
-    exe_tests.setBuildMode(mode);
+    exe_tests = b.addTest(std.Build.TestOptions{
+        .name = "new_test",
+        .root_source_file = .{
+            .path = "src/new_test.zig",
+        },
+        .target = target,
+        .optimize = optimize,
+    });
     test_step.dependOn(&exe_tests.step);
 }
